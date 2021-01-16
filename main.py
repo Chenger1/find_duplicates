@@ -1,6 +1,7 @@
 from win32api import GetSystemDirectory, GetUserName
 import os
 import re
+import time
 from win10toast import ToastNotifier
 
 drive = GetSystemDirectory().split(':')[0]
@@ -13,7 +14,7 @@ class Main:
     def __init__(self, folders: list):
         self.folders = folders
         self.folder_path = None
-        self.files = []
+        self.files = self.check_files()
         self.toaster = ToastNotifier()
 
     def check_path(self):
@@ -22,8 +23,8 @@ class Main:
                 self.folder_path = folder
                 break
 
-    def check_files(self):
-        self.files = os.listdir(self.folder_path)
+    def check_files(self) -> list:
+        return os.listdir(self.folder_path)
 
     def check_duplicate(self):
         for file in self.files:
@@ -38,7 +39,7 @@ class Main:
     @staticmethod
     def filename_proceed(filename: str) -> str:
         patterns = list(filter(lambda elem: '' != elem,
-                          [' - Copy', ' - Копия']))
+                        [' - Copy', ' - Копия']))
         re_found = ''.join(re.findall('\\(\\d\\).', filename))
         is_replaced = False
         for pattern in patterns:
@@ -55,9 +56,24 @@ class Main:
     def show_message(self, filename: str):
         self.toaster.show_toast('Такой файл уже есть в папке', f'{filename}')
 
+    def check_for_changes_in_dict(self) -> bool:
+        trg = False
+        new_state = self.check_files()
+        if self.files == new_state:
+            trg = True
+        self.files = new_state
+        return trg
+
 
 if __name__ == '__main__':
     inst = Main(download_folders)
     inst.check_path()
     inst.check_files()
-    inst.check_duplicate()
+
+    while True:
+        try:
+            if inst.check_for_changes_in_dict():
+                inst.check_duplicate()
+            time.sleep(5)
+        except KeyboardInterrupt:
+            break
