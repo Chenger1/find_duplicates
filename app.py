@@ -13,7 +13,7 @@ class Application(tk.Frame):
 
     def create_widgets(self):
         self.text = tk.Button(self)
-        self.text["text"] = "Программа для поиска дубликатов. Поиск каждые 5 секунд"
+        self.text['text'] = "Запустить мониторинг дубликатов"
         self.text.pack(side="top")
         self.text['command'] = self.runloop
 
@@ -24,6 +24,8 @@ class Application(tk.Frame):
     def runloop(self):
         self.sub = subprocess.Popen([sys.executable, 'main.py'], shell=False, stdin=None, stdout=None, stderr=None,
                                     close_fds=True)
+        self.text['text'] = 'Мониторинг запущен'
+        self.text.pack(side='top')
 
     def kill_programm(self):
         self.sub.kill()
