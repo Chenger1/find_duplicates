@@ -65,7 +65,7 @@ class Main:
         return trg
 
 
-if __name__ == '__main__':
+def runloop():
     inst = Main(download_folders)
     inst.check_path()
     inst.check_files()
@@ -74,6 +74,10 @@ if __name__ == '__main__':
         try:
             if inst.check_for_changes_in_dict():
                 inst.check_duplicate()
-            time.sleep(5)
+            time.sleep(10)
         except KeyboardInterrupt:
             break
+
+
+if __name__ == '__main__':
+    runloop()
