@@ -1,5 +1,6 @@
 from win32api import GetSystemDirectory, GetUserName
 import os
+import re
 from win10toast import ToastNotifier
 
 drive = GetSystemDirectory().split(':')[0]
@@ -26,8 +27,30 @@ class Main:
 
     def check_duplicate(self):
         for file in self.files:
-            if self.files.count(file) >= 2:
-                self.show_message(file)
+            file, is_replaced = self.filename_proceed(file)
+            if is_replaced:
+                if self.files.count(file) >= 1:
+                    self.show_message(file)
+            else:
+                if self.files.count(file) >= 2:
+                    self.show_message(file)
+
+    @staticmethod
+    def filename_proceed(filename: str) -> str:
+        patterns = list(filter(lambda elem: '' != elem,
+                          [' - Copy', ' - Копия']))
+        re_found = ''.join(re.findall('\\(\\d\\).', filename))
+        is_replaced = False
+        for pattern in patterns:
+            if pattern in filename:
+                is_replaced = True
+            filename = filename.replace(pattern, '')
+        else:
+            if re_found:
+                filename = filename.replace(' {}'.format(re_found[:-1]), '')
+                is_replaced = True
+
+        return filename, is_replaced
 
     def show_message(self, filename: str):
         self.toaster.show_toast('Такой файл уже есть в папке', f'{filename}')
